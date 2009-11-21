@@ -58,11 +58,13 @@ class Board():
     for c in self.cells:
       yield cell
 
-  def set_overlay(self, top, left, board):  
-    self.overlay = []
-    for cell in board:
+  def overlay(self, top, left, board):
+    self.overlay = board
+    self.overlay_cells = []
+    for cell in self.overlay.cells:
       x, y = cell
-      self.overlay.append(x + top, y + left)
+      self.overlay_cells.append((x + top, y + left))
+
 
 class BoardView(pyglet.window.Window):
   def __init__(self, width, height):
