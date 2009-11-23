@@ -30,7 +30,7 @@ class Board():
 
   @bounds_check
   def on(self, top, left):
-    for cell in self.all():
+    for cell in self.cells:
       x, y = cell
       if x == left and y == top:
         return True
@@ -60,9 +60,9 @@ class Board():
     for c in self.overlay_cells_at(top, left, self.overlay.cells):
       x, y = c
       if self.on(x, y):
-        print "collides"
+        print "collides", x, y
         return True
-    print "fall theough"
+    print "fall through"
     return False
 
   def transform(self, action):
@@ -123,9 +123,10 @@ class BoardView(pyglet.window.Window):
   def init_game(self):
     self.board = Board(self.rows, self.columns)
     self.board.set(1, 1)
-    self.board.set(1, 2)
-    self.board.set(2, 2)
-    self.board.set(3, 3)
+    #self.board.set(1, 2)
+    #self.board.set(2, 2)
+    print self.rows, self.columns
+    self.board.set(self.rows, self.columns)
 
     ol = Board(2, 2)
     ol.set(1, 1)
@@ -148,7 +149,9 @@ class BoardView(pyglet.window.Window):
       r, g, b = 1, 1, 1
     else:
       r, g, b = color
-    
+
+    col = col - 1
+
     glBegin(GL_QUADS)
     glColor3f(r, g, b)
     bsize = 32
