@@ -25,10 +25,12 @@ class Board():
     self.h = height
     self.w = width
     self.cells = []
+    self.anchor = None
+    self.overlay = None
 
   @bounds_check
   def on(self, top, left):
-    for cell in self.cells + self.overlay_cells:
+    for cell in self.all():
       x, y = cell
       if x == left and y == top:
         return True
@@ -54,32 +56,50 @@ class Board():
       self.cells.remove(index)
       return True
 
+  def collides(self, top, left):
+    for c in self.overlay_cells_at(top, left, self.overlay.cells):
+      x, y = c
+      if self.on(x, y):
+        print "collides"
+        return True
+    print "fall theough"
+    return False
+
+  def transform(self, action):
+    top, left = self.overlay.anchor
+    new_top, new_left = None, None
+    if action == 'left':
+      new_top, new_left = top, left - 1
+    if action == 'right':
+      new_top, new_left = top, left + 1
+    if action == 'up':
+      new_top, new_left = top - 1, left
+    if action == 'down':
+      new_top, new_left = top + 1, left
+      
+    if self.collides(new_top, new_left):
+      print "%s collides, cancelled" % action
+    else:
+      self.overlay.anchor = new_top, new_left
+      
+  def overlay_cells_at(self, top, left, cells):
+    for c in cells:
+      t, l = c
+      yield (top + t, left  + l)
+
+  def overlay_cells(self):
+    if self.overlay:
+      for c in self.overlay.cells:
+        top, left = c
+        anchor_top, anchor_left = self.overlay.anchor
+        yield (top + anchor_top, left + anchor_left)
+        
   def all(self):
-    for c in self.cells + self.overlay_cells:
+    for c in self.cells:
+      yield c
+    for c in self.overlay_cells():
       yield c
 
-  def overlay(self, top, left, board):
-    self.overlay_pos = (top, left)
-    self.overlay_board = board
-    self.overlay_cells = []
-    self.new_overlay_cells 
-    for cell in self.overlay_board.cells:
-      x, y = cell
-      self.overlay_cells.append((x + top, y + left))
-
-  def overlay_transform(self, direction):
-    new_overlay = []
-    top, left = self.overlay_pos 
-    if direction == 'LEFT':
-      self.overlay(top, left - 1, self.overlay_board)
-    if direction == 'RIGHT':
-      self.overlay(top, left + 1, self.overlay_board)
-    if direction == 'DOWN':
-      self.overlay(top + 1, left, self.overlay_board)
-    if direction == 'UP':
-      self.overlay(top - 1, left, self.overlay_board)
-  
-    
 class BoardView(pyglet.window.Window):
   def __init__(self, width, height):
     pyglet.window.Window.__init__(self, width * 32, height * 32)
@@ -112,7 +132,8 @@ class BoardView(pyglet.window.Window):
     ol.set(2, 1)
     ol.set(2, 2)
 
-    self.board.overlay(5, 5, ol)
+    self.board.overlay = ol
+    self.board.overlay.anchor = (5, 5)
 
   def draw_board(self):
     for c in self.board.all():
@@ -145,13 +166,13 @@ class BoardView(pyglet.window.Window):
 
   def on_key_press(self, symbol, modifiers):
     if symbol == key.LEFT:
-      self.board.overlay_transform('LEFT')
+      self.board.transform('left')
     if symbol == key.RIGHT:
-      self.board.overlay_transform('RIGHT')
+      self.board.transform('right')
     if symbol == key.UP:
-      self.board.overlay_transform('UP')
+      self.board.transform('up')
     if symbol == key.DOWN:
-      self.board.overlay_transform('DOWN')
+      self.board.transform('down')
 
 if __name__ == '__main__':
   b = BoardView(10, 15)
