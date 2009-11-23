@@ -8,7 +8,7 @@ import random
 
 def bounds_check(fn): 
   def check(self, top, left):
-    if top < 0 or top > self.h or left < 0 or left > self.w:
+    if top < 0 or top > self.h or left < 1 or left > self.w:
       raise GridError("co-ordinates are not within %s, %s : %s, %s" % (self.h, self.w, top, left))
     return fn(self, top, left)
   return check
@@ -32,7 +32,7 @@ class Board():
   def on(self, top, left):
     for cell in self.cells:
       x, y = cell
-      if x == left and y == top:
+      if x == top and y == left:
         return True
     return False
 
@@ -40,7 +40,7 @@ class Board():
   def find(self, top, left):
     for index, cell in enumerate(self.cells):
       x, y = cell
-      if x == left and y == top:
+      if x == top and y == left:
         return index
     return False
 
@@ -55,16 +55,17 @@ class Board():
     if not index == False:
       self.cells.remove(index)
       return True
-
+ 
   def collides(self, top, left):
-    for c in self.overlay_cells_at(top, left, self.overlay.cells):
-      x, y = c
-      if self.on(x, y):
-        print "collides", x, y
-        return True
-    print "fall through"
-    return False
-
+    try:
+      for c in self.overlay_cells_at(top, left, self.overlay.cells):
+        x, y = c
+        if self.on(x, y):
+          return True
+      return False
+    except GridError:
+      return True
+      
   def transform(self, action):
     top, left = self.overlay.anchor
     new_top, new_left = None, None
@@ -85,20 +86,27 @@ class Board():
   def overlay_cells_at(self, top, left, cells):
     for c in cells:
       t, l = c
-      yield (top + t, left  + l)
+      new_top, new_left = top + t, left + l
+      if not self.within_board(new_top, new_left):
+        raise GridError('Not in grid!')
+      yield (new_top, new_left)
 
   def overlay_cells(self):
     if self.overlay:
       for c in self.overlay.cells:
         top, left = c
         anchor_top, anchor_left = self.overlay.anchor
-        yield (top + anchor_top, left + anchor_left)
+        new_top, new_left = top + anchor_top, left + anchor_left
+        yield (new_top, new_left)
         
   def all(self):
     for c in self.cells:
       yield c
     for c in self.overlay_cells():
       yield c
+
+  def within_board(self, top, left):
+    return not top < 1 or top > self.h or left < 1 or left > self.w
 
 class BoardView(pyglet.window.Window):
   def __init__(self, width, height):
@@ -124,14 +132,14 @@ class BoardView(pyglet.window.Window):
     self.board = Board(self.rows, self.columns)
     self.board.set(1, 1)
     #self.board.set(1, 2)
-    #self.board.set(2, 2)
-    print self.rows, self.columns
+    self.board.set(8, 4)
     self.board.set(self.rows, self.columns)
 
-    ol = Board(2, 2)
+    ol = Board(1, 4)
     ol.set(1, 1)
-    ol.set(2, 1)
-    ol.set(2, 2)
+    ol.set(1, 2)
+    ol.set(1, 3)
+    ol.set(1, 4)
 
     self.board.overlay = ol
     self.board.overlay.anchor = (5, 5)
