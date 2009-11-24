@@ -117,6 +117,7 @@ class Tetromino(Board):
     self.color = (1, 0, 0)
 
   def set_many(self, *cells):
+    self.cells = []
     for c in cells:
       x, y = c
       self.set(x, y)
@@ -158,7 +159,7 @@ class BoardView(pyglet.window.Window):
     self.board.set(self.rows, self.columns)
 
     self.board.overlay = Tetromino()
-    self.board.overlay.square()
+    self.board.overlay.tee()
     self.board.overlay.anchor = (5, 5)
 
   def draw_board(self):
