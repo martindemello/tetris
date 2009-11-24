@@ -7,10 +7,10 @@ from pyglet.window import key
 import random
 
 def bounds_check(fn): 
-  def check(self, top, left):
+  def check(self, top, left, *args):
     if top < 0 or top > self.h or left < 1 or left > self.w:
       raise GridError("co-ordinates are not within %s, %s : %s, %s" % (self.h, self.w, top, left))
-    return fn(self, top, left)
+    return fn(self, top, left, *args)
   return check
 
 class GridError(exceptions.Exception):
@@ -31,7 +31,7 @@ class Board():
   @bounds_check
   def on(self, top, left):
     for cell in self.cells:
-      x, y = cell
+      x, y, color = cell
       if x == top and y == left:
         return True
     return False
@@ -39,15 +39,15 @@ class Board():
   @bounds_check
   def find(self, top, left):
     for index, cell in enumerate(self.cells):
-      x, y = cell
+      x, y, color = cell
       if x == top and y == left:
         return index
     return False
 
   @bounds_check
-  def set(self, top, left):
+  def set(self, top, left, color=None):
     if not self.on(top, left):
-      return self.cells.append((top, left))
+      return self.cells.append((top, left, color))
   
   @bounds_check
   def unset(self, top, left):
@@ -85,7 +85,7 @@ class Board():
       
   def overlay_cells_at(self, top, left, cells):
     for c in cells:
-      t, l = c
+      t, l, color = c
       new_top, new_left = top + t, left + l
       if not self.within_board(new_top, new_left):
         raise GridError('Not in grid!')
@@ -94,10 +94,10 @@ class Board():
   def overlay_cells(self):
     if self.overlay:
       for c in self.overlay.cells:
-        top, left = c
+        top, left, color = c
         anchor_top, anchor_left = self.overlay.anchor
         new_top, new_left = top + anchor_top, left + anchor_left
-        yield (new_top, new_left)
+        yield (new_top, new_left, color)
         
   def all(self):
     for c in self.cells:
@@ -130,9 +130,9 @@ class BoardView(pyglet.window.Window):
 
   def init_game(self):
     self.board = Board(self.rows, self.columns)
-    self.board.set(1, 1)
-    #self.board.set(1, 2)
-    self.board.set(8, 4)
+    self.board.set(1, 1, (1, 0, 0))
+    self.board.set(1, 2, (1, 0.5, 0.6))
+    self.board.set(8, 4, (0, 0, 1.0))
     self.board.set(self.rows, self.columns)
 
     ol = Board(1, 4)
@@ -146,8 +146,9 @@ class BoardView(pyglet.window.Window):
 
   def draw_board(self):
     for c in self.board.all():
-      x, y = c
-      self.draw_cell(x, y)
+      print c
+      x, y, color = c
+      self.draw_cell(x, y, color)
 
   def game_loop(self):
     pass
