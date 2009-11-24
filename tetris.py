@@ -27,6 +27,7 @@ class Board():
     self.cells = []
     self.anchor = None
     self.overlay = None
+    self.color = None
 
   @bounds_check
   def on(self, top, left):
@@ -46,6 +47,8 @@ class Board():
 
   @bounds_check
   def set(self, top, left, color=None):
+    if self.color:
+      color = self.color
     if not self.on(top, left):
       return self.cells.append((top, left, color))
   
@@ -108,6 +111,25 @@ class Board():
   def within_board(self, top, left):
     return not top < 1 or top > self.h or left < 1 or left > self.w
 
+class Tetromino(Board):
+  def __init__(self, type=None):
+    Board.__init__(self, 4, 4)
+    self.color = (1, 0, 0)
+
+  def set_many(self, *cells):
+    for c in cells:
+      x, y = c
+      self.set(x, y)
+      
+  # piece names from http://en.wikipedia.org/wiki/Tetromino
+  def stick(self): self.set_many((1, 1), (1, 2), (1, 3), (1, 4))
+  def gamma(self): self.set_many((1, 1), (1, 2), (1, 3), (2, 1))
+  def gun(self): self.set_many((1, 2), (2, 1), (2, 2), (2, 3))
+  def square(self): self.set_many((1, 1), (1, 2), (2, 1), (2, 2))
+  def enn(self): self.set_many((1, 1), (2, 1), (2, 2), (2, 3))
+  def snake(self): self.set_many((2, 1), (2, 2), (2, 1), (3, 1))
+  def tee(self): self.set_many((1, 2), (2, 1), (2, 2), (2, 3))
+
 class BoardView(pyglet.window.Window):
   def __init__(self, width, height):
     pyglet.window.Window.__init__(self, width * 32, height * 32)
@@ -135,18 +157,12 @@ class BoardView(pyglet.window.Window):
     self.board.set(8, 4, (0, 0, 1.0))
     self.board.set(self.rows, self.columns)
 
-    ol = Board(1, 4)
-    ol.set(1, 1)
-    ol.set(1, 2)
-    ol.set(1, 3)
-    ol.set(1, 4)
-
-    self.board.overlay = ol
+    self.board.overlay = Tetromino()
+    self.board.overlay.tee()
     self.board.overlay.anchor = (5, 5)
 
   def draw_board(self):
     for c in self.board.all():
-      print c
       x, y, color = c
       self.draw_cell(x, y, color)
 
