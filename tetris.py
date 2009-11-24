@@ -124,10 +124,10 @@ class Tetromino(Board):
   # piece names from http://en.wikipedia.org/wiki/Tetromino
   def stick(self): self.set_many((1, 1), (1, 2), (1, 3), (1, 4))
   def gamma(self): self.set_many((1, 1), (1, 2), (1, 3), (2, 1))
-  def gun(self): self.set_many((1, 2), (2, 1), (2, 2), (2, 3))
+  def gun(self): self.set_many((2, 1), (2, 2), (2, 3), (3, 3))
   def square(self): self.set_many((1, 1), (1, 2), (2, 1), (2, 2))
-  def enn(self): self.set_many((1, 1), (2, 1), (2, 2), (2, 3))
-  def snake(self): self.set_many((2, 1), (2, 2), (2, 1), (3, 1))
+  def enn(self): self.set_many((1, 1), (2, 1), (2, 2), (3, 2))
+  def snake(self): self.set_many((1, 2), (2, 2), (2, 1), (3, 1))
   def tee(self): self.set_many((1, 2), (2, 1), (2, 2), (2, 3))
 
 class BoardView(pyglet.window.Window):
@@ -158,7 +158,7 @@ class BoardView(pyglet.window.Window):
     self.board.set(self.rows, self.columns)
 
     self.board.overlay = Tetromino()
-    self.board.overlay.tee()
+    self.board.overlay.square()
     self.board.overlay.anchor = (5, 5)
 
   def draw_board(self):
