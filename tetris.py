@@ -71,15 +71,9 @@ class Board():
       
   def transform(self, action):
     top, left = self.overlay.anchor
-    new_top, new_left = None, None
-    if action == 'left':
-      new_top, new_left = top, left - 1
-    if action == 'right':
-      new_top, new_left = top, left + 1
-    if action == 'up':
-      new_top, new_left = top - 1, left
-    if action == 'down':
-      new_top, new_left = top + 1, left
+    move = {'left': (0, -1), 'right': (0, 1), 'up': (-1, 0), 'down': (1, 0)}
+    dy, dx = move.get(action, (0, 0))
+    new_top, new_left = top + dy, left + dx
       
     if self.collides(new_top, new_left):
       print "%s collides, cancelled" % action
